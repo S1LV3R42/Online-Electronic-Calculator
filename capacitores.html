@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leer Capacitancia - Calculadora Electrónica Universal</title>
+    <style>
+        :root {
+            --primary-color: #007bff; --primary-dark: #0056b3; --bg-color: #f4f7f9;
+            --card-bg: #ffffff; --text-color: #333; --border-color: #dee2e6;
+            --success-color: #28a745;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; }
+        .container { width: 95%; max-width: 800px; margin: 20px auto; }
+        header { background-color: var(--card-bg); padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        header h1 { color: var(--primary-color); text-align: center; margin-bottom: 15px; }
+        nav ul { display: flex; justify-content: center; list-style: none; background-color: var(--primary-dark); border-radius: 8px; padding: 5px; }
+        nav ul li a { color: white; text-decoration: none; padding: 10px 20px; font-weight: 500; transition: background-color 0.3s; border-radius: 5px; }
+        nav ul li a:hover, nav ul li a.active { background-color: var(--primary-color); }
+        main { background-color: var(--card-bg); padding: 25px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        .tabs { display: flex; flex-wrap: wrap; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-bottom: 25px; }
+        .tabs label { padding: 12px 18px; cursor: pointer; background-color: #e9ecef; transition: background-color 0.3s; color: #495057; font-weight: 500; flex-grow: 1; text-align: center; font-size: 0.9em; }
+        .tabs input[type="radio"] { display: none; }
+        .tabs input[type="radio"]:checked + label { background-color: var(--primary-color); color: #fff; }
+        .calculator { display: none; }
+        .calculator.active { display: block; }
+        .input-group { display: flex; flex-direction: column; gap: 15px; max-width: 350px; margin: 20px auto; text-align: center; }
+        .input-group label { font-weight: 500; margin-bottom: -10px; text-align: left; }
+        .input-group input, .input-group select { width: 100%; padding: 10px; font-size: 1.1em; border-radius: 5px; border: 1px solid var(--border-color); }
+        .input-group p.example { font-size: 0.85em; color: #6c757d; margin-top: -5px; text-align: left;}
+        .bands { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+        .band { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 80px; }
+        .band label { font-size: 0.9em; margin-bottom: 5px; color: #555; font-weight: 500;}
+        select { padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 1em; width: 100%;}
+        .result { margin-top: 25px; padding: 20px; background-color: #e3f2fd; border-left: 5px solid var(--primary-color); text-align: center; min-height: 120px; }
+        .result p { margin: 8px 0; font-size: 1.1em; }
+        .result span { font-weight: bold; color: var(--primary-dark); }
+        .copy-button { background-color: var(--success-color); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: 500; margin-top: 15px; transition: background-color 0.2s; }
+        .copy-button:hover { background-color: #218838; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Calculadora Electrónica Universal de Capacitores</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Leer Resistencia</a></li>
+                    <li><a href="capacitores.html" class="active">Leer Capacitancia</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+             <div class="tabs">
+                <input type="radio" id="select-colors" name="capacitor-type" value="colors" checked><label for="select-colors">Código de Colores</label>
+                <input type="radio" id="select-numeric" name="capacitor-type" value="numeric"><label for="select-numeric">Numérico / SMD</label>
+                <input type="radio" id="select-electrolytic" name="capacitor-type" value="electrolytic"><label for="select-electrolytic">Electrolítico</label>
+            </div>
+
+            <div id="calculator-colors" class="calculator active">
+                <div class="bands">
+                    <div class="band"><label>1ª Banda</label><select data-band-role="digit"></select></div>
+                    <div class="band"><label>2ª Banda</label><select data-band-role="digit"></select></div>
+                    <div class="band"><label>Multiplicador</label><select data-band-role="multiplier"></select></div>
+                    <div class="band"><label>Tolerancia</label><select data-band-role="tolerance"></select></div>
+                </div>
+            </div>
+
+            <div id="calculator-numeric" class="calculator">
+                <div class="input-group">
+                    <label for="numeric-code">Código Numérico</label>
+                    <input type="text" id="numeric-code" placeholder="104">
+                    <p class="example">Ej: 104, 472, 223, 4R7</p>
+                    <label for="numeric-tolerance">Tolerancia (Letra)</label>
+                    <select id="numeric-tolerance"></select>
+                </div>
+            </div>
+
+            <div id="calculator-electrolytic" class="calculator">
+                <div class="input-group">
+                    <label for="electro-value">Capacitancia Impresa</label>
+                    <input type="text" id="electro-value" placeholder="47µF">
+                     <p class="example">Ej: 47µF, 100uF, 2200µF</p>
+                    <label for="electro-voltage">Voltaje Impreso</label>
+                    <input type="text" id="electro-voltage" placeholder="25V">
+                    <p class="example">Ej: 25V, 16V, 400V</p>
+                </div>
+            </div>
+
+            <div id="result-display" class="result">
+                <p>Seleccione un tipo de capacitor e ingrese sus datos.</p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        const CAPACITOR_DATA = {
+            // Código de colores estándar EIA
+            colors: {
+                digit: {'Negro':0, 'Marrón':1, 'Rojo':2, 'Naranja':3, 'Amarillo':4, 'Verde':5, 'Azul':6, 'Violeta':7, 'Gris':8, 'Blanco':9},
+                multiplier: {'Negro':1, 'Marrón':10, 'Rojo':100, 'Naranja':1e3, 'Amarillo':1e4, 'Verde':1e5, 'Azul':1e6, 'Violeta':1e7, 'Gris':1e8, 'Blanco':1e9, 'Dorado':0.1, 'Plateado':0.01},
+                tolerance: {'Marrón':'±1%', 'Rojo':'±2%', 'Verde':'±0.5%', 'Azul':'±0.25%', 'Violeta':'±0.1%', 'Gris':'±0.05%', 'Dorado':'±5%', 'Plateado':'±10%', 'Nada':'±20%'}
+            },
+            // Letras de tolerancia estándar EIA
+            numericTolerance: {'F':'±1%', 'G':'±2%', 'J':'±5%', 'K':'±10%', 'M':'±20%', 'Z':'-20%/+80%'},
+            colorMap: {'Negro':'#000000', 'Marrón':'#A52A2A', 'Rojo':'#FF0000', 'Naranja':'#FFA500', 'Amarillo':'#FFFF00', 'Verde':'#008000', 'Azul':'#0000FF', 'Violeta':'#8A2BE2', 'Gris':'#808080', 'Blanco':'#FFFFFF', 'Dorado':'#FFD700', 'Plateado':'#C0C0C0', 'Nada':'#f0f0f0'}
+        };
+
+        const resultDisplay = document.getElementById('result-display');
+        let lastResultText = '';
+
+        function formatAllUnits(pValue) {
+            const val_nF = pValue / 1e3;
+            const val_uF = pValue / 1e6;
+            return `<span>${pValue.toLocaleString('es')}</span> pF / <span>${val_nF.toLocaleString('es')}</span> nF / <span>${val_uF.toLocaleString('es')}</span> µF`;
+        }
+        
+        function calculateColors() {
+            const selects = document.getElementById('calculator-colors').querySelectorAll('select');
+            let digitString = '', multiplierValue = 1, toleranceValue = '±20%'; // Default sin banda
+
+            selects.forEach(select => {
+                const role = select.dataset.bandRole, colorName = select.value;
+                if (role === 'digit') digitString += CAPACITOR_DATA.colors.digit[colorName];
+                else if (role === 'multiplier') multiplierValue = CAPACITOR_DATA.colors.multiplier[colorName];
+                else if (role === 'tolerance') toleranceValue = CAPACITOR_DATA.colors.tolerance[colorName];
+            });
+
+            if (!digitString) return;
+            const valueInPf = parseInt(digitString, 10) * multiplierValue;
+            
+            lastResultText = `Capacitancia: ${formatAllUnits(valueInPf)}\nTolerancia: ${toleranceValue}`;
+            updateResultDisplay(lastResultText);
+        }
+
+        function calculateNumeric() {
+            const code = document.getElementById('numeric-code').value.trim().toUpperCase();
+            if (!code) { resultDisplay.innerHTML = `<p>Introduce un código numérico.</p>`; return; }
+            
+            try {
+                let valueInPf;
+                if (code.includes('R')) valueInPf = parseFloat(code.replace('R', '.'));
+                else if (/^\d{3}$/.test(code)) valueInPf = parseInt(code.substring(0, 2)) * Math.pow(10, parseInt(code[2]));
+                else if (/^\d{1,2}$/.test(code)) valueInPf = parseInt(code);
+                else throw new Error("Formato no válido.");
+
+                const tolerance = CAPACITOR_DATA.numericTolerance[document.getElementById('numeric-tolerance').value];
+                lastResultText = `Capacitancia: ${formatAllUnits(valueInPf)}\nTolerancia: ${tolerance || 'No especificada'}`;
+                updateResultDisplay(lastResultText);
+            } catch (e) {
+                resultDisplay.innerHTML = `<p>Código no válido. Use formatos como 104, 47, o 4R7.</p>`;
+            }
+        }
+
+        function calculateElectrolytic() {
+            const valueStr = document.getElementById('electro-value').value.trim();
+            const voltageStr = document.getElementById('electro-voltage').value.trim();
+            if (!valueStr) { resultDisplay.innerHTML = `<p>Introduce la capacitancia impresa.</p>`; return; }
+
+            const value = parseFloat(valueStr.replace(/,/g, '.'));
+            const unit = (valueStr.match(/[a-zA-Z]+/g) || ['µF'])[0].toLowerCase();
+            
+            let valueInPf;
+            if (unit === 'uf' || unit === 'µf') valueInPf = value * 1e6;
+            else if (unit === 'nf') valueInPf = value * 1e3;
+            else valueInPf = value;
+
+            lastResultText = `Capacitancia: ${formatAllUnits(valueInPf)}\nVoltaje: ${voltageStr || 'No especificado'}`;
+            updateResultDisplay(lastResultText);
+        }
+
+        function updateResultDisplay(text) {
+            const lines = text.split('\n');
+            let html = '';
+            lines.forEach(line => {
+                const parts = line.split(':');
+                html += `<p>${parts[0]}: ${parts[1]}</p>`;
+            });
+            html += `<button class="copy-button">📋 Copiar Resultado</button>`;
+            resultDisplay.innerHTML = html;
+        }
+
+        function copyResultToClipboard() {
+             navigator.clipboard.writeText(lastResultText.replace(/<\/?[^>]+(>|$)/g, "")).then(() => {
+                const button = resultDisplay.querySelector('.copy-button');
+                button.textContent = '✅ ¡Copiado!';
+                setTimeout(() => { button.textContent = '📋 Copiar Resultado'; }, 2000);
+            });
+        }
+        
+        resultDisplay.addEventListener('click', e => {
+            if (e.target && e.target.classList.contains('copy-button')) copyResultToClipboard();
+        });
+
+        // --- INICIALIZACIÓN ---
+        function getTextColor(bgColor) { return ['#000000', '#A52A2A', '#0000FF', '#8A2BE2', '#808080'].includes(bgColor) ? 'white' : 'black'; }
+        function styleSelect(selectEl) {
+            const colorHex = CAPACITOR_DATA.colorMap[selectEl.value];
+            if (colorHex) {
+                selectEl.style.backgroundColor = colorHex;
+                selectEl.style.color = getTextColor(colorHex);
+            }
+        }
+
+        const firstDigitColors = { ...CAPACITOR_DATA.colors.digit };
+        delete firstDigitColors['Negro'];
+        
+        document.getElementById('calculator-colors').querySelectorAll('select').forEach((sel, index) => {
+            const role = sel.dataset.bandRole;
+            let data = (role === 'digit' && index === 0) ? firstDigitColors : CAPACITOR_DATA.colors[role];
+            if (role === 'tolerance') data['Nada'] = '±20%'; // Añadir opción sin banda
+
+            for (const name in data) {
+                const option = new Option(name, name);
+                option.style.backgroundColor = CAPACITOR_DATA.colorMap[name];
+                option.style.color = getTextColor(CAPACITOR_DATA.colorMap[name]);
+                sel.add(option);
+            }
+            styleSelect(sel);
+            sel.addEventListener('change', () => { styleSelect(sel); calculateColors(); });
+        });
+
+        const numericTolSelect = document.getElementById('numeric-tolerance');
+        for (const key in CAPACITOR_DATA.numericTolerance) numericTolSelect.add(new Option(`${key} (${CAPACITOR_DATA.numericTolerance[key]})`, key));
+        numericTolSelect.value = 'K';
+
+        document.getElementById('numeric-code').addEventListener('input', calculateNumeric);
+        numericTolSelect.addEventListener('change', calculateNumeric);
+        document.getElementById('electro-value').addEventListener('input', calculateElectrolytic);
+        document.getElementById('electro-voltage').addEventListener('input', calculateElectrolytic);
+
+        document.querySelectorAll('input[name="capacitor-type"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.querySelectorAll('.calculator').forEach(c => c.classList.remove('active'));
+                const targetId = `calculator-${this.value}`;
+                document.getElementById(targetId).classList.add('active');
+                
+                if (this.value === 'colors') calculateColors();
+                else if (this.value === 'numeric') calculateNumeric();
+                else if (this.value === 'electrolytic') calculateElectrolytic();
+            });
+        });
+        
+        calculateColors();
+    });
+    </script>
+</body>
+</html>
